@@ -4647,8 +4647,8 @@ function openHero() {
 function tryBGMPlay() {
   var audio = document.getElementById('bgmAudio');
   if (!audio) return;
-  if (audio.readyState < 2) { audio.load(); }
   audio.volume = 0.6;
+  // Play immediately - browser will buffer as needed
   var p = audio.play();
   if (p && p.then) {
     p.then(function() {
@@ -4658,6 +4658,10 @@ function tryBGMPlay() {
       if (iconOff) iconOff.style.display = 'none';
     }).catch(function(err) {
       console.log('BGM play blocked:', err.name);
+      // Retry once on failure
+      setTimeout(function() {
+        audio.play().catch(function(){});
+      }, 100);
     });
   }
 }
@@ -4955,7 +4959,12 @@ const observer = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
 
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+// Skip reveal elements inside hero - they are controlled by .hero.opened CSS
+document.querySelectorAll('.reveal').forEach(el => {
+  if (!el.closest('.hero')) {
+    observer.observe(el);
+  }
+});
 
 // ========== COUNTER ANIMATION ==========
 function animateCounter(el) {
