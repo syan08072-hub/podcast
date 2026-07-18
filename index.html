@@ -5499,12 +5499,17 @@ function buildBubble3D() {
   bubbles.forEach(b => { const[,,d] = proj(b.x, b.y, b.z); b._depth = d; });
   bubbles.sort((a, b) => a._depth - b._depth);
 
-  // 强制"节目内容评价与听后反馈"在最底层（所有其他气泡都显示在它前面）
-  const targetIdx = bubbles.findIndex(b => b.label.includes('节目内容评价'));
-  if (targetIdx > 0) {
-    const [target] = bubbles.splice(targetIdx, 1);
-    bubbles.unshift(target);
-  }
+  // 强制大气泡放在底层，小气泡叠在上面形成层次感
+  // 后放的气泡（数组后面）会盖在先画的（数组前面）上面
+  // 所以大气泡放前面（先画，在底层），小气泡放后面（后画，在上层）
+  const largeBubbles = ['节目内容评价', '即时互动'];
+  largeBubbles.forEach(name => {
+    const idx = bubbles.findIndex(b => b.label.includes(name));
+    if (idx > 0) {
+      const [b] = bubbles.splice(idx, 1);
+      bubbles.unshift(b);
+    }
+  });
 
   el('defs', {});
 
