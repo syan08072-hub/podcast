@@ -5481,8 +5481,8 @@ function buildBubble3D() {
     {label:'音乐音质与\n形式反馈',   count:78,   x:1.0, y:2.2, z:1.1, color:'#2670A0'},
 
     // ---- 中评 (x≈2.0, 中等思考深度 y≈2.5~3.3) ----
-    {label:'观点辨析与\n知识补充',   count:2278, x:2.0, y:1.0, z:1.9, color:'#3580B0'},
-    {label:'节目内容评价\n与听后反馈', count:2237, x:1.5, y:1.1, z:1.1, color:'#2A78A8'},
+    {label:'观点辨析与\n知识补充',   count:2278, x:2.0, y:1.0, z:2.0, color:'#3580B0'},
+    {label:'节目内容评价\n与听后反馈', count:2237, x:1.5, y:1.1, z:0.6, color:'#2A78A8'},
     {label:'自我成长与\n情绪疗愈',   count:884,  x:2.0, y:3.0, z:2.9, color:'#1D6D98'},
     {label:'社会性别\n职场观察',     count:730,  x:2.0, y:3.2, z:2.4, color:'#155E8A'},
     {label:'人际家庭与\n生活经验',   count:284,  x:2.0, y:3.4, z:2.7, color:'#1A6590'},
@@ -5498,6 +5498,13 @@ function buildBubble3D() {
   // Sort by depth (painter's algorithm, far first)
   bubbles.forEach(b => { const[,,d] = proj(b.x, b.y, b.z); b._depth = d; });
   bubbles.sort((a, b) => a._depth - b._depth);
+
+  // 强制"节目内容评价与听后反馈"在最底层（所有其他气泡都显示在它前面）
+  const targetIdx = bubbles.findIndex(b => b.label.includes('节目内容评价'));
+  if (targetIdx > 0) {
+    const [target] = bubbles.splice(targetIdx, 1);
+    bubbles.unshift(target);
+  }
 
   el('defs', {});
 
