@@ -5088,6 +5088,39 @@ document.querySelectorAll('.reveal').forEach(el => {
   }
 });
 
+// 修复：页面所有资源加载完成后，强制显示视口内的reveal元素
+// 防止第一次加载时图片未加载完导致布局不稳定，Observer漏触发
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.querySelectorAll('.reveal:not(.visible):not(.hero .reveal)').forEach(el => {
+      const rect = el.getBoundingClientRect();
+      // 如果元素在视口内（或部分可见），立即显示
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        el.classList.add('visible');
+        // 同时触发内部的动画
+        const bars = el.querySelectorAll('.bar-fill[data-width]');
+        bars.forEach(bar => {
+          setTimeout(() => { bar.style.width = bar.dataset.width + '%'; }, 100);
+        });
+        const segs = el.querySelectorAll('.stacked-segment[data-width]');
+        segs.forEach(seg => {
+          setTimeout(() => { seg.style.width = seg.dataset.width + '%'; }, 100);
+        });
+        const gbars = el.querySelectorAll('.growth-bar[data-height]');
+        gbars.forEach(bar => {
+          setTimeout(() => { bar.style.height = bar.dataset.height + '%'; }, 100);
+        });
+        const counters = el.querySelectorAll('.counter[data-target]');
+        counters.forEach(counter => {
+          if (counter.dataset.animated) return;
+          counter.dataset.animated = '1';
+          animateCounter(counter);
+        });
+      }
+    });
+  }, 200);
+});
+
 // ========== COUNTER ANIMATION ==========
 function animateCounter(el) {
   const target = parseFloat(el.dataset.target);
